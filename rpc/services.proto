@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "project/rpc";
+
+package main;
+
+service Register {
+    rpc Arrival (Ship) returns (Reply) {}
+}
+
+message Ship {
+    string imo = 1;
+    string name = 2;
+}
+
+message Reply {
+    string message = 1;
+}
