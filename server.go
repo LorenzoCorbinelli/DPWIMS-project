@@ -22,10 +22,7 @@ var ports = map[string]string {
 }
 
 func arrivalHandler(writer http.ResponseWriter, request *http.Request) {
-	keys := make([]string, 0)
-	for k, _ := range ports {
-		keys = append(keys, k)
-	}
+	keys := portList()
 	templ, _ := template.ParseFiles("arrival.html")
 	templ.Execute(writer, keys)
 }
@@ -46,8 +43,46 @@ func registerArrival(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err.Error())
 		return
 	}
-	log.Println(r.GetMessage())
+	templ, _ := template.ParseFiles("portReply.html")
+	templ.Execute(writer, r.GetMessage())
 	conn.Close()
+}
+
+func departureHandler(writer http.ResponseWriter, request *http.Request) {
+	keys := portList()
+	templ, _ := template.ParseFiles("departure.html")
+	templ.Execute(writer, keys)
+}
+
+func registerDeparture(writer http.ResponseWriter, request *http.Request) {
+	port := request.PostFormValue("port")
+	ship := pb.DepartingShip {
+		Imo: request.PostFormValue("imo"),
+		Name: request.PostFormValue("shipName"),
+		Destination: request.PostFormValue("destination"),
+	}
+	conn := portConnection(port)
+
+	c := pb.NewRegisterClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.Departure(ctx, &ship)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+	templ, _ := template.ParseFiles("portReply.html")
+	templ.Execute(writer, r.GetMessage())
+	conn.Close()
+}
+
+func portList() []string{
+	keys := make([]string, 0)
+
+	for k, _ := range ports {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func portConnection(port string) *grpc.ClientConn {
@@ -73,5 +108,7 @@ func main() {
 
 	http.HandleFunc("/arrival", arrivalHandler)
 	http.HandleFunc("/registerArrival", registerArrival)
+	http.HandleFunc("/departure", departureHandler)
+	http.HandleFunc("/registerDeparture", registerDeparture)
 	http.ListenAndServe(":8080", nil)
 }

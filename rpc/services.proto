@@ -6,11 +6,18 @@ package main;
 
 service Register {
     rpc Arrival (Ship) returns (Reply) {}
+    rpc Departure (DepartingShip) returns (Reply) {}
 }
 
 message Ship {
     string imo = 1;
     string name = 2;
+}
+
+message DepartingShip {
+    string imo = 1;
+    string name = 2;
+    string destination = 3;
 }
 
 message Reply {

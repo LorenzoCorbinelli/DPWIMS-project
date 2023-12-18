@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.1
-// source: rpc/services.proto
+// source: services.proto
 
 package rpc
 
@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Register_Arrival_FullMethodName = "/main.Register/Arrival"
+	Register_Arrival_FullMethodName   = "/main.Register/Arrival"
+	Register_Departure_FullMethodName = "/main.Register/Departure"
 )
 
 // RegisterClient is the client API for Register service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RegisterClient interface {
 	Arrival(ctx context.Context, in *Ship, opts ...grpc.CallOption) (*Reply, error)
+	Departure(ctx context.Context, in *DepartingShip, opts ...grpc.CallOption) (*Reply, error)
 }
 
 type registerClient struct {
@@ -46,11 +48,21 @@ func (c *registerClient) Arrival(ctx context.Context, in *Ship, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *registerClient) Departure(ctx context.Context, in *DepartingShip, opts ...grpc.CallOption) (*Reply, error) {
+	out := new(Reply)
+	err := c.cc.Invoke(ctx, Register_Departure_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RegisterServer is the server API for Register service.
 // All implementations must embed UnimplementedRegisterServer
 // for forward compatibility
 type RegisterServer interface {
 	Arrival(context.Context, *Ship) (*Reply, error)
+	Departure(context.Context, *DepartingShip) (*Reply, error)
 	mustEmbedUnimplementedRegisterServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedRegisterServer struct {
 
 func (UnimplementedRegisterServer) Arrival(context.Context, *Ship) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Arrival not implemented")
+}
+func (UnimplementedRegisterServer) Departure(context.Context, *DepartingShip) (*Reply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Departure not implemented")
 }
 func (UnimplementedRegisterServer) mustEmbedUnimplementedRegisterServer() {}
 
@@ -92,6 +107,24 @@ func _Register_Arrival_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Register_Departure_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DepartingShip)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RegisterServer).Departure(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Register_Departure_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RegisterServer).Departure(ctx, req.(*DepartingShip))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Register_ServiceDesc is the grpc.ServiceDesc for Register service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,7 +136,11 @@ var Register_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Arrival",
 			Handler:    _Register_Arrival_Handler,
 		},
+		{
+			MethodName: "Departure",
+			Handler:    _Register_Departure_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "rpc/services.proto",
+	Metadata: "services.proto",
 }

@@ -30,7 +30,7 @@ func (s *server) Departure(ctx context.Context, in *pb.DepartingShip) (*pb.Reply
 func main() {
 	log.Println("Port on")
 	var err error
-	db, err = gorm.Open(sqlite.Open("livorno.db"), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open("barcellona.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err.Error)
 		return
@@ -38,7 +38,7 @@ func main() {
 
 	dbm.CreateTables(db)
 
-	lis, err := net.Listen("tcp", ":8090")
+	lis, err := net.Listen("tcp", ":8091")
 	if err != nil {
 		log.Fatal(err.Error())
 		return
