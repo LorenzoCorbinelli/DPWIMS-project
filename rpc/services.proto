@@ -7,6 +7,7 @@ package main;
 service Register {
     rpc Arrival (Ship) returns (Reply) {}
     rpc Departure (DepartingShip) returns (Reply) {}
+    rpc Bunkering (BunkeringRequest) returns (BunkeringReply) {}
 }
 
 message Ship {
@@ -22,4 +23,13 @@ message DepartingShip {
 
 message Reply {
     string message = 1;
+}
+
+message BunkeringRequest {
+    string imo = 1;
+}
+
+message BunkeringReply {
+    string errorMessage = 1;
+    Ship tanker = 2;
 }

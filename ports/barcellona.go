@@ -27,6 +27,11 @@ func (s *server) Departure(ctx context.Context, in *pb.DepartingShip) (*pb.Reply
 	return &pb.Reply{Message: "Departure registered"}, nil
 }
 
+// NOT IMPLEMENTED
+func (s *server) Bunkering(ctx context.Context, in *pb.BunkeringRequest) (*pb.BunkeringReply, error) {
+	return &pb.BunkeringReply{}, nil
+}
+
 func main() {
 	log.Println("Port on")
 	var err error
@@ -37,6 +42,29 @@ func main() {
 	}
 
 	dbm.CreateTables(db)
+
+	tankers := make([]dbm.BunkeringShips, 0)
+	tankers = append(tankers, dbm.BunkeringShips{
+		Imo: "9280378",
+		Name: "Spabunker veintidos",
+		Available: true,
+	})
+	tankers = append(tankers, dbm.BunkeringShips{
+		Imo: "9301172",
+		Name: "Petrobay",
+		Available: true,
+	})
+	tankers = append(tankers, dbm.BunkeringShips{
+		Imo: "9391177",
+		Name: "Greenoil",
+		Available: true,
+	})
+	tankers = append(tankers, dbm.BunkeringShips{
+		Imo: "9398955",
+		Name: "Spabunker cincuenta",
+		Available: true,
+	})
+	dbm.SetUpBunkeringShips(db, tankers)
 
 	lis, err := net.Listen("tcp", ":8091")
 	if err != nil {

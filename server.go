@@ -76,6 +76,17 @@ func registerDeparture(writer http.ResponseWriter, request *http.Request) {
 	conn.Close()
 }
 
+func bunkeringRequest(writer http.ResponseWriter, request *http.Request) {
+	keys := portList()
+	templ, _ := template.ParseFiles("bunkering.html")
+	templ.Execute(writer, keys)
+}
+
+// NOT IMPLEMENTED
+func bunkeringHandler(writer http.ResponseWriter, request *http.Request) {
+	
+}
+
 func portList() []string{
 	keys := make([]string, 0)
 
@@ -108,7 +119,11 @@ func main() {
 
 	http.HandleFunc("/arrival", arrivalHandler)
 	http.HandleFunc("/registerArrival", registerArrival)
+
 	http.HandleFunc("/departure", departureHandler)
 	http.HandleFunc("/registerDeparture", registerDeparture)
+
+	http.HandleFunc("/bunkering", bunkeringRequest)
+	http.HandleFunc("/bunkeringHandler", bunkeringHandler)
 	http.ListenAndServe(":8080", nil)
 }
