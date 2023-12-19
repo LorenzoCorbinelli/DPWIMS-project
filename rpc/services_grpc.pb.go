@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Register_Arrival_FullMethodName   = "/main.Register/Arrival"
-	Register_Departure_FullMethodName = "/main.Register/Departure"
-	Register_Bunkering_FullMethodName = "/main.Register/Bunkering"
+	Register_Arrival_FullMethodName      = "/main.Register/Arrival"
+	Register_Departure_FullMethodName    = "/main.Register/Departure"
+	Register_Bunkering_FullMethodName    = "/main.Register/Bunkering"
+	Register_BunkeringEnd_FullMethodName = "/main.Register/BunkeringEnd"
 )
 
 // RegisterClient is the client API for Register service.
@@ -31,6 +32,7 @@ type RegisterClient interface {
 	Arrival(ctx context.Context, in *Ship, opts ...grpc.CallOption) (*Reply, error)
 	Departure(ctx context.Context, in *DepartingShip, opts ...grpc.CallOption) (*Reply, error)
 	Bunkering(ctx context.Context, in *BunkeringRequest, opts ...grpc.CallOption) (*BunkeringReply, error)
+	BunkeringEnd(ctx context.Context, in *BunkeringRequest, opts ...grpc.CallOption) (*Reply, error)
 }
 
 type registerClient struct {
@@ -68,6 +70,15 @@ func (c *registerClient) Bunkering(ctx context.Context, in *BunkeringRequest, op
 	return out, nil
 }
 
+func (c *registerClient) BunkeringEnd(ctx context.Context, in *BunkeringRequest, opts ...grpc.CallOption) (*Reply, error) {
+	out := new(Reply)
+	err := c.cc.Invoke(ctx, Register_BunkeringEnd_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RegisterServer is the server API for Register service.
 // All implementations must embed UnimplementedRegisterServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type RegisterServer interface {
 	Arrival(context.Context, *Ship) (*Reply, error)
 	Departure(context.Context, *DepartingShip) (*Reply, error)
 	Bunkering(context.Context, *BunkeringRequest) (*BunkeringReply, error)
+	BunkeringEnd(context.Context, *BunkeringRequest) (*Reply, error)
 	mustEmbedUnimplementedRegisterServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedRegisterServer) Departure(context.Context, *DepartingShip) (*
 }
 func (UnimplementedRegisterServer) Bunkering(context.Context, *BunkeringRequest) (*BunkeringReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Bunkering not implemented")
+}
+func (UnimplementedRegisterServer) BunkeringEnd(context.Context, *BunkeringRequest) (*Reply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BunkeringEnd not implemented")
 }
 func (UnimplementedRegisterServer) mustEmbedUnimplementedRegisterServer() {}
 
@@ -158,6 +173,24 @@ func _Register_Bunkering_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Register_BunkeringEnd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BunkeringRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RegisterServer).BunkeringEnd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Register_BunkeringEnd_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RegisterServer).BunkeringEnd(ctx, req.(*BunkeringRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Register_ServiceDesc is the grpc.ServiceDesc for Register service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var Register_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Bunkering",
 			Handler:    _Register_Bunkering_Handler,
+		},
+		{
+			MethodName: "BunkeringEnd",
+			Handler:    _Register_BunkeringEnd_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

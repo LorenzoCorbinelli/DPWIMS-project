@@ -8,6 +8,7 @@ service Register {
     rpc Arrival (Ship) returns (Reply) {}
     rpc Departure (DepartingShip) returns (Reply) {}
     rpc Bunkering (BunkeringRequest) returns (BunkeringReply) {}
+    rpc BunkeringEnd (BunkeringRequest) returns (Reply) {}
 }
 
 message Ship {

@@ -82,9 +82,57 @@ func bunkeringRequest(writer http.ResponseWriter, request *http.Request) {
 	templ.Execute(writer, keys)
 }
 
-// NOT IMPLEMENTED
 func bunkeringHandler(writer http.ResponseWriter, request *http.Request) {
+	port := request.PostFormValue("port")
+	bunkeringReq := pb.BunkeringRequest {
+		Imo: request.PostFormValue("imo"),
+	}
+	conn := portConnection(port)
+
+	c := pb.NewRegisterClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.Bunkering(ctx, &bunkeringReq)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
 	
+	if r.GetErrorMessage() != "" {
+		templ, _ := template.ParseFiles("portReply.html")
+		templ.Execute(writer, r.GetErrorMessage())
+	} else {
+		templ, _ := template.ParseFiles("bunkeringSuccess.html")
+		type Response struct {
+			Port string
+			Imo string
+			Name string
+		}
+		resp := Response{Port: port, Imo: r.GetTanker().GetImo(), Name: r.GetTanker().GetName()}
+		templ.Execute(writer, &resp)
+	}
+	conn.Close()
+}
+
+func bunkeringEndHandler(writer http.ResponseWriter, request *http.Request) {
+	port := request.PostFormValue("port")
+	bunkeringReq := pb.BunkeringRequest {
+		Imo: request.PostFormValue("imo"),
+	}
+	conn := portConnection(port)
+
+	c := pb.NewRegisterClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.BunkeringEnd(ctx, &bunkeringReq)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+	
+	templ, _ := template.ParseFiles("portReply.html")
+	templ.Execute(writer, r.GetMessage())
+	conn.Close()
 }
 
 func portList() []string{
@@ -125,5 +173,6 @@ func main() {
 
 	http.HandleFunc("/bunkering", bunkeringRequest)
 	http.HandleFunc("/bunkeringHandler", bunkeringHandler)
+	http.HandleFunc("/bunkeringEnd", bunkeringEndHandler)
 	http.ListenAndServe(":8080", nil)
 }

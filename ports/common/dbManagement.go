@@ -62,19 +62,23 @@ func InsertNewDeparture(db *gorm.DB, imo string, name string, destination string
 	db.Delete(&ShipsInPort{}, imo)
 }
 
-//NOT TESTED
 func Bunkering(db *gorm.DB, imo string) (int, *BunkeringShips) {
 	ship := ShipsInPort{}
 
-	result := db.First(&ship, imo)
+	result := db.Find(&ship, imo).Limit(1)
 	if result.RowsAffected == 0 {
 		return -1, nil	// the ship is not in this port
 	}
 	tanker := BunkeringShips{}
-	result = db.Where("available = ?", true).First(&tanker)
+	result = db.Where("available = ?", true).Find(&tanker).Limit(1)
 	if result.RowsAffected == 0 {
 		return 0, nil	// all the bunkering ships are unavailable
 	}
-	// UPDATE AVAILABLE = FALSE ON THE DB
+	db.Model(&tanker).Select("available").Updates(BunkeringShips{Available: false})
 	return 1, &tanker
+}
+
+func BunkeringEnd(db *gorm.DB, tankerImo string) {
+	tanker := BunkeringShips{Imo: tankerImo}
+	db.Model(&tanker).Select("available").Updates(BunkeringShips{Available: true})
 }

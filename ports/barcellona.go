@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"log"
+	"os"
 	"google.golang.org/grpc"
 	pb "project/rpc"
 	"gorm.io/gorm"
@@ -27,12 +28,25 @@ func (s *server) Departure(ctx context.Context, in *pb.DepartingShip) (*pb.Reply
 	return &pb.Reply{Message: "Departure registered"}, nil
 }
 
-// NOT IMPLEMENTED
 func (s *server) Bunkering(ctx context.Context, in *pb.BunkeringRequest) (*pb.BunkeringReply, error) {
-	return &pb.BunkeringReply{}, nil
+	result, tanker := dbm.Bunkering(db, in.GetImo())
+	if result == -1 {	// the ship (client) is not in this port
+		return &pb.BunkeringReply{ErrorMessage: "The ship that requested a bunkering operation is not in this port", Tanker: nil}, nil
+	}
+	if result == 0 {	// bunkering ships unavailable
+		return &pb.BunkeringReply{ErrorMessage: "All the bunkering ships are unavailable", Tanker: nil}, nil
+	}
+	ship := pb.Ship{Imo: tanker.Imo, Name: tanker.Name}
+	return &pb.BunkeringReply{ErrorMessage: "", Tanker: &ship}, nil
+}
+
+func (s *server) BunkeringEnd(ctx context.Context, in *pb.BunkeringRequest) (*pb.Reply, error) {
+	dbm.BunkeringEnd(db, in.GetImo())
+	return &pb.Reply{Message: "Bunkering ended successfully"}, nil
 }
 
 func main() {
+	os.Remove("barcellona.db")
 	log.Println("Port on")
 	var err error
 	db, err = gorm.Open(sqlite.Open("barcellona.db"), &gorm.Config{})
