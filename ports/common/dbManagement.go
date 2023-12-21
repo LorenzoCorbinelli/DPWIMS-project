@@ -34,12 +34,18 @@ type BunkeringShips struct {
 	Available bool
 }
 
+type Tugs struct {
+	Imo string	`gorm:"primaryKey"`
+	Name string
+	Available bool
+}
+
 func (ShipsInPort) TableName() string {
 	return "ships_in_port"
   }
 
 func CreateTables(db *gorm.DB) {
-	err := db.AutoMigrate(&ShipsInPort{}, &Arrivals{}, &Departures{}, &BunkeringShips{})
+	err := db.AutoMigrate(&ShipsInPort{}, &Arrivals{}, &Departures{}, &BunkeringShips{}, &Tugs{})
 	if err != nil {
 		log.Fatal(err.Error())
 		return
@@ -49,6 +55,12 @@ func CreateTables(db *gorm.DB) {
 func SetUpBunkeringShips(db *gorm.DB, ships []BunkeringShips) {
 	for _, tanker := range ships {
 		db.Create(&BunkeringShips{Imo: tanker.Imo, Name: tanker.Name, Available: tanker.Available})
+	}
+}
+
+func SetUpTugs(db *gorm.DB, tugs []Tugs) {
+	for _, tug := range tugs {
+		db.Create(&Tugs{Imo: tug.Imo, Name: tug.Name, Available: tug.Available})
 	}
 }
 
@@ -81,4 +93,22 @@ func Bunkering(db *gorm.DB, imo string) (int, *BunkeringShips) {
 func BunkeringEnd(db *gorm.DB, tankerImo string) {
 	tanker := BunkeringShips{Imo: tankerImo}
 	db.Model(&tanker).Select("available").Updates(BunkeringShips{Available: true})
+}
+
+func AcquireTugs(db *gorm.DB, imo string, requestType string, tugsNumber int) (int, []Tugs) {
+	if requestType == "departure" {		// the ship must be in this port
+		ship := ShipsInPort{}
+		result := db.Find(&ship, imo).Limit(1)
+		if result.RowsAffected == 0 {
+			return -1, nil	// the ship is not in this port
+		}
+	}
+
+	tugs := []Tugs{}
+	result := db.Limit(tugsNumber).Where("available = ?", true).Find(&tugs)
+	if result.RowsAffected < int64(tugsNumber) {
+		return 0, nil	// not enough available tugs
+	}
+	db.Model(&tugs).Select("available").Updates(Tugs{Available: false})
+	return 1, tugs
 }

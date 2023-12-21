@@ -7,8 +7,9 @@ package main;
 service Register {
     rpc Arrival (Ship) returns (Reply) {}
     rpc Departure (DepartingShip) returns (Reply) {}
-    rpc Bunkering (BunkeringRequest) returns (BunkeringReply) {}
+    rpc Bunkering (BunkeringRequest) returns (ShipReply) {}
     rpc BunkeringEnd (BunkeringRequest) returns (Reply) {}
+    rpc acquireTugs (TugsRequest) returns (TugsReply) {}
 }
 
 message Ship {
@@ -30,7 +31,18 @@ message BunkeringRequest {
     string imo = 1;
 }
 
-message BunkeringReply {
+message ShipReply {
     string errorMessage = 1;
-    Ship tanker = 2;
+    Ship ship = 2;
+}
+
+message TugsRequest {
+    string imo = 1;
+    string type = 2;
+    int32 tugsNumber = 3;
+}
+
+message TugsReply {
+    string errorMessage = 1;
+    repeated Ship ships = 2;
 }

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <form action="http://127.0.0.1:8080/releaseTug" method="post" enctype="application/x-www-form-urlencoded">
+            <label>Port: </label>
+            <input type="text" name="port" readonly="readonly" value={{.Port}}>
+            <br><br>
+            {{range .Ships}}
+                <label>IMO: </label>
+                <input type="text" name="imo" readonly="readonly" value={{.Imo}}>
+                <label>Tug name: </label>
+                <input type="text" name="shipName" readonly="readonly" value={{.Name}}>
+                <br><br>
+            {{end}}
+            <br><br>
+            <input type="submit" value="Release tugs">
+        </form>
+    </body>
+</html>

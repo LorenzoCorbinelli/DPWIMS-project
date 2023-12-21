@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"context"
 	"time"
+	"strconv"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	pb "project/rpc"
@@ -108,7 +109,7 @@ func bunkeringHandler(writer http.ResponseWriter, request *http.Request) {
 			Imo string
 			Name string
 		}
-		resp := Response{Port: port, Imo: r.GetTanker().GetImo(), Name: r.GetTanker().GetName()}
+		resp := Response{Port: port, Imo: r.GetShip().GetImo(), Name: r.GetShip().GetName()}
 		templ.Execute(writer, &resp)
 	}
 	conn.Close()
@@ -132,6 +133,46 @@ func bunkeringEndHandler(writer http.ResponseWriter, request *http.Request) {
 	
 	templ, _ := template.ParseFiles("portReply.html")
 	templ.Execute(writer, r.GetMessage())
+	conn.Close()
+}
+
+func tugsRequest(writer http.ResponseWriter, request *http.Request) {
+	keys := portList()
+	templ, _ := template.ParseFiles("tugs.html")
+	templ.Execute(writer, keys)
+}
+
+func tugsHandler(writer http.ResponseWriter, request *http.Request) {
+	port := request.PostFormValue("port")
+	n, _ := strconv.ParseInt(request.PostFormValue("tugsNumber"), 10, 32)
+	tugsReq := pb.TugsRequest {
+		Imo: request.PostFormValue("imo"),
+		Type: request.PostFormValue("requestType"),
+		TugsNumber: int32(n),
+	}
+	conn := portConnection(port)
+
+	c := pb.NewRegisterClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.AcquireTugs(ctx, &tugsReq)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+	
+	if r.GetErrorMessage() != "" {
+		templ, _ := template.ParseFiles("portReply.html")
+		templ.Execute(writer, r.GetErrorMessage())
+	} else {
+		templ, _ := template.ParseFiles("tugInfo.html")
+		type Response struct {
+			Port string
+			Ships []*pb.Ship
+		}
+		resp := Response{Port: port, Ships: r.GetShips()}
+		templ.Execute(writer, &resp)
+	}
 	conn.Close()
 }
 
@@ -174,5 +215,8 @@ func main() {
 	http.HandleFunc("/bunkering", bunkeringRequest)
 	http.HandleFunc("/bunkeringHandler", bunkeringHandler)
 	http.HandleFunc("/bunkeringEnd", bunkeringEndHandler)
+
+	http.HandleFunc("/tugs", tugsRequest)
+	http.HandleFunc("/tugsHandler", tugsHandler)
 	http.ListenAndServe(":8080", nil)
 }
