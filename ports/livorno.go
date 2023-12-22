@@ -60,6 +60,11 @@ func (s *server) AcquireTugs(ctx context.Context, in *pb.TugsRequest) (*pb.TugsR
 	return &pb.TugsReply{ErrorMessage: "", Ships: ships}, nil
 }
 
+func (s *server) ReleaseTugs(ctx context.Context, in *pb.ReleaseTugsRequest) (*pb.Reply, error) {
+	dbm.ReleaseTugs(db, in.GetImoList())
+	return &pb.Reply{Message: "Tugs released successfully"}, nil
+}
+
 func main() {
 	os.Remove("livorno.db")
 	log.Println("Port on")

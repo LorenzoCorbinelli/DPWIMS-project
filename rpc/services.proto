@@ -9,7 +9,8 @@ service Register {
     rpc Departure (DepartingShip) returns (Reply) {}
     rpc Bunkering (BunkeringRequest) returns (ShipReply) {}
     rpc BunkeringEnd (BunkeringRequest) returns (Reply) {}
-    rpc acquireTugs (TugsRequest) returns (TugsReply) {}
+    rpc AcquireTugs (TugsRequest) returns (TugsReply) {}
+    rpc ReleaseTugs(ReleaseTugsRequest) returns (Reply) {}
 }
 
 message Ship {
@@ -45,4 +46,8 @@ message TugsRequest {
 message TugsReply {
     string errorMessage = 1;
     repeated Ship ships = 2;
+}
+
+message ReleaseTugsRequest {
+    repeated string imoList = 1;
 }

@@ -60,6 +60,11 @@ func (s *server) AcquireTugs(ctx context.Context, in *pb.TugsRequest) (*pb.TugsR
 	return &pb.TugsReply{ErrorMessage: "", Ships: ships}, nil
 }
 
+func (s *server) ReleaseTugs(ctx context.Context, in *pb.ReleaseTugsRequest) (*pb.Reply, error) {
+	dbm.ReleaseTugs(db, in.GetImoList())
+	return &pb.Reply{Message: "Tugs released successfully"}, nil
+}
+
 func main() {
 	os.Remove("barcellona.db")
 	log.Println("Port on")
@@ -94,6 +99,24 @@ func main() {
 		Available: true,
 	})
 	dbm.SetUpBunkeringShips(db, tankers)
+
+	tugs := make([]dbm.Tugs, 0)
+	tugs = append(tugs, dbm.Tugs{
+		Imo: "9881328",
+		Name: "Azabra",
+		Available: true,
+	})
+	tugs = append(tugs, dbm.Tugs{
+		Imo: "9390771",
+		Name: "Eliseo vazquez",
+		Available: true,
+	})
+	tugs = append(tugs, dbm.Tugs{
+		Imo: "9439723",
+		Name: "Montclar",
+		Available: true,
+	})
+	dbm.SetUpTugs(db, tugs)
 
 	lis, err := net.Listen("tcp", ":8091")
 	if err != nil {

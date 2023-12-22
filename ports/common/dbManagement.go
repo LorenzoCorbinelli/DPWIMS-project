@@ -112,3 +112,11 @@ func AcquireTugs(db *gorm.DB, imo string, requestType string, tugsNumber int) (i
 	db.Model(&tugs).Select("available").Updates(Tugs{Available: false})
 	return 1, tugs
 }
+
+func ReleaseTugs(db *gorm.DB, imoList []string) {
+	tug := Tugs{}
+	for _, imo := range imoList {
+		tug.Imo = imo
+		db.Model(&tug).Select("available").Updates(Tugs{Available: true})
+	}
+}

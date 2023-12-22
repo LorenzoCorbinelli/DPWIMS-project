@@ -176,6 +176,40 @@ func tugsHandler(writer http.ResponseWriter, request *http.Request) {
 	conn.Close()
 }
 
+func releaseTugsHandler(writer http.ResponseWriter, request *http.Request) {
+	// retrieve the imos
+	i := 0
+	imoList := make([]string, 0)
+	for {
+		imo := request.PostFormValue(strconv.Itoa(i))
+		if imo != "" {
+			imoList = append(imoList, imo)
+			i++
+		} else {
+			break
+		}
+	}
+
+	port := request.PostFormValue("port")
+	tugsReq := pb.ReleaseTugsRequest {
+		ImoList: imoList,
+	}
+	conn := portConnection(port)
+
+	c := pb.NewRegisterClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.ReleaseTugs(ctx, &tugsReq)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+	
+	templ, _ := template.ParseFiles("portReply.html")
+	templ.Execute(writer, r.GetMessage())
+	conn.Close()
+}
+
 func portList() []string{
 	keys := make([]string, 0)
 
@@ -218,5 +252,6 @@ func main() {
 
 	http.HandleFunc("/tugs", tugsRequest)
 	http.HandleFunc("/tugsHandler", tugsHandler)
+	http.HandleFunc("/releaseTugs", releaseTugsHandler)
 	http.ListenAndServe(":8080", nil)
 }
