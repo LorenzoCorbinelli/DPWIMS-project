@@ -59,12 +59,18 @@ func createPort(name string, portConnection string, bunkeringShips []dbm.Bunkeri
 }
 
 func (s *server) Arrival(ctx context.Context, in *pb.Ship) (*pb.Reply, error) {
-	dbm.InsertNewArrival(s.Db, in.GetImo(), in.GetName())
+	result := dbm.InsertNewArrival(s.Db, in.GetImo(), in.GetName())
+	if result == -1 {	// the ship is already in this port
+		return &pb.Reply{Message: "The ship is already in this port, so it can't perform an arrival request"}, nil
+	}
 	return &pb.Reply{Message: "Arrival registered"}, nil
 }
 
 func (s *server) Departure(ctx context.Context, in *pb.DepartingShip) (*pb.Reply, error) {
-	dbm.InsertNewDeparture(s.Db, in.GetImo(), in.GetName(), in.GetDestination())
+	result := dbm.InsertNewDeparture(s.Db, in.GetImo(), in.GetName(), in.GetDestination())
+	if result == -1 {	// the ship is not in this port
+		return &pb.Reply{Message: "The ship is not in this port, so it can't perform a departure request"}, nil
+	}
 	return &pb.Reply{Message: "Departure registered"}, nil
 }
 

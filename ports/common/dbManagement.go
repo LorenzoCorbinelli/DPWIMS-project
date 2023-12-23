@@ -16,13 +16,15 @@ type Tabler interface {
 }
 
 type Arrivals struct {
-	Imo string	`gorm:"primaryKey"`
+	ID uint		`gorm:"primaryKey"`
+	Imo string
 	Name string
 	Date time.Time
 }
 
 type Departures struct {
-	Imo string	`gorm:"primaryKey"`
+	ID uint		`gorm:"primaryKey"`
+	Imo string
 	Name string
 	Destination string
 	Date time.Time
@@ -64,14 +66,26 @@ func SetUpTugs(db *gorm.DB, tugs []Tugs) {
 	}
 }
 
-func InsertNewArrival(db *gorm.DB, imo string, name string) {
+func InsertNewArrival(db *gorm.DB, imo string, name string) int {
+	ship := ShipsInPort{}
+	result := db.Find(&ship, imo).Limit(1)
+	if result.RowsAffected != 0 {
+		return -1	// the ship is already in this port
+	}
 	db.Create(&Arrivals{Imo: imo, Name: name, Date: time.Now()})
 	db.Create(&ShipsInPort{Imo: imo, Name: name})
+	return 0
 }
 
-func InsertNewDeparture(db *gorm.DB, imo string, name string, destination string) {
+func InsertNewDeparture(db *gorm.DB, imo string, name string, destination string) int {
+	ship := ShipsInPort{}
+	result := db.Find(&ship, imo).Limit(1)
+	if result.RowsAffected == 0 {
+		return -1	// the ship is not in this port
+	}
 	db.Create(&Departures{Imo: imo, Name: name, Destination: destination, Date: time.Now()})
 	db.Delete(&ShipsInPort{}, imo)
+	return 0
 }
 
 func Bunkering(db *gorm.DB, imo string) (int, *BunkeringShips) {
