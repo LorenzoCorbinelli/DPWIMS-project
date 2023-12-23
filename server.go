@@ -17,9 +17,12 @@ type Ship struct {
 	Name string
 }
 
-var ports = map[string]string {
-	"Livorno": "8090",
-	"Barcellona": "8091",
+var ports = make(map[string]string)
+
+func registerNewPort(writer http.ResponseWriter, request *http.Request) {
+	portName := request.URL.Query().Get("name")
+	portConnection := request.URL.Query().Get("portConnection")
+	ports[portName] = portConnection
 }
 
 func arrivalHandler(writer http.ResponseWriter, request *http.Request) {
@@ -239,6 +242,8 @@ func portConnection(port string) *grpc.ClientConn {
 
 func main() {
 	log.Println("Server on")
+
+	http.HandleFunc("/registerPort", registerNewPort)
 
 	http.HandleFunc("/arrival", arrivalHandler)
 	http.HandleFunc("/registerArrival", registerArrival)
