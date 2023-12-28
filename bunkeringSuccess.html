@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html>
-    <body>
-        <form action="http://127.0.0.1:8080/bunkeringEnd" method="post" enctype="application/x-www-form-urlencoded">
-            <label>Port: </label>
-            <input type="text" name="port" readonly="readonly" value={{.Port}}>
-            <label>IMO: </label>
-            <input type="text" name="imo" readonly="readonly" value={{.Imo}}>
-            <label>Tanker name: </label>
-            <input type="text" name="shipName" readonly="readonly" value={{.Name}}>
-            <input type="submit" value="Bunkering end">
-        </form>
-    </body>
-</html>
+{{define "content"}}
+<form action="http://127.0.0.1:8080/bunkeringEnd" method="post" enctype="application/x-www-form-urlencoded">
+    <label>Port: </label>
+    <input type="text" name="port" readonly="readonly" value={{.Port}}>
+    <label>IMO: </label>
+    <input type="text" name="imo" readonly="readonly" value={{.Imo}}>
+    <label>Tanker name: </label>
+    <input type="text" name="shipName" readonly="readonly" value={{.Name}}>
+    <input type="submit" value="Bunkering end">
+</form>
+{{end}}

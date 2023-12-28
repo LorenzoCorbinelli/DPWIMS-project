@@ -27,8 +27,8 @@ func registerNewPort(writer http.ResponseWriter, request *http.Request) {
 
 func arrivalHandler(writer http.ResponseWriter, request *http.Request) {
 	keys := portList()
-	templ, _ := template.ParseFiles("arrival.html")
-	templ.Execute(writer, keys)
+	templ, _ := template.ParseFiles("layout.html", "arrival.html")
+	templ.ExecuteTemplate(writer, "layout", keys)
 }
 
 func registerArrival(writer http.ResponseWriter, request *http.Request) {
@@ -47,15 +47,15 @@ func registerArrival(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err.Error())
 		return
 	}
-	templ, _ := template.ParseFiles("portReply.html")
-	templ.Execute(writer, r.GetMessage())
+	templ, _ := template.ParseFiles("layout.html", "portReply.html")
+	templ.ExecuteTemplate(writer, "layout", r.GetMessage())
 	conn.Close()
 }
 
 func departureHandler(writer http.ResponseWriter, request *http.Request) {
 	keys := portList()
-	templ, _ := template.ParseFiles("departure.html")
-	templ.Execute(writer, keys)
+	templ, _ := template.ParseFiles("layout.html", "departure.html")
+	templ.ExecuteTemplate(writer, "layout", keys)
 }
 
 func registerDeparture(writer http.ResponseWriter, request *http.Request) {
@@ -75,15 +75,15 @@ func registerDeparture(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err.Error())
 		return
 	}
-	templ, _ := template.ParseFiles("portReply.html")
-	templ.Execute(writer, r.GetMessage())
+	templ, _ := template.ParseFiles("layout.html", "portReply.html")
+	templ.ExecuteTemplate(writer, "layout", r.GetMessage())
 	conn.Close()
 }
 
 func bunkeringRequest(writer http.ResponseWriter, request *http.Request) {
 	keys := portList()
-	templ, _ := template.ParseFiles("bunkering.html")
-	templ.Execute(writer, keys)
+	templ, _ := template.ParseFiles("layout.html", "bunkering.html")
+	templ.ExecuteTemplate(writer, "layout", keys)
 }
 
 func bunkeringHandler(writer http.ResponseWriter, request *http.Request) {
@@ -103,17 +103,17 @@ func bunkeringHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	
 	if r.GetErrorMessage() != "" {
-		templ, _ := template.ParseFiles("portReply.html")
-		templ.Execute(writer, r.GetErrorMessage())
+		templ, _ := template.ParseFiles("layout.html", "portReply.html")
+		templ.ExecuteTemplate(writer, "layout", r.GetErrorMessage())
 	} else {
-		templ, _ := template.ParseFiles("bunkeringSuccess.html")
+		templ, _ := template.ParseFiles("layout.html", "bunkeringSuccess.html")
 		type Response struct {
 			Port string
 			Imo string
 			Name string
 		}
 		resp := Response{Port: port, Imo: r.GetShip().GetImo(), Name: r.GetShip().GetName()}
-		templ.Execute(writer, &resp)
+		templ.ExecuteTemplate(writer, "layout", &resp)
 	}
 	conn.Close()
 }
@@ -134,15 +134,15 @@ func bunkeringEndHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	
-	templ, _ := template.ParseFiles("portReply.html")
-	templ.Execute(writer, r.GetMessage())
+	templ, _ := template.ParseFiles("layout.html", "portReply.html")
+	templ.ExecuteTemplate(writer, "layout", r.GetMessage())
 	conn.Close()
 }
 
 func tugsRequest(writer http.ResponseWriter, request *http.Request) {
 	keys := portList()
-	templ, _ := template.ParseFiles("tugs.html")
-	templ.Execute(writer, keys)
+	templ, _ := template.ParseFiles("layout.html", "tugs.html")
+	templ.ExecuteTemplate(writer, "layout", keys)
 }
 
 func tugsHandler(writer http.ResponseWriter, request *http.Request) {
@@ -165,16 +165,16 @@ func tugsHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	
 	if r.GetErrorMessage() != "" {
-		templ, _ := template.ParseFiles("portReply.html")
-		templ.Execute(writer, r.GetErrorMessage())
+		templ, _ := template.ParseFiles("layout.html", "portReply.html")
+		templ.ExecuteTemplate(writer, "layout", r.GetErrorMessage())
 	} else {
-		templ, _ := template.ParseFiles("tugInfo.html")
+		templ, _ := template.ParseFiles("layout.html", "tugInfo.html")
 		type Response struct {
 			Port string
 			Ships []*pb.Ship
 		}
 		resp := Response{Port: port, Ships: r.GetShips()}
-		templ.Execute(writer, &resp)
+		templ.ExecuteTemplate(writer, "layout", &resp)
 	}
 	conn.Close()
 }
@@ -208,8 +208,8 @@ func releaseTugsHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	
-	templ, _ := template.ParseFiles("portReply.html")
-	templ.Execute(writer, r.GetMessage())
+	templ, _ := template.ParseFiles("layout.html", "portReply.html")
+	templ.ExecuteTemplate(writer, "layout", r.GetMessage())
 	conn.Close()
 }
 
@@ -230,15 +230,6 @@ func portConnection(port string) *grpc.ClientConn {
 	}
 	return conn
 }
-
-/*func loadPage(fileName string) []byte {
-	body, err := os.ReadFile(fileName)
-	if err != nil {
-		log.Fatal(err.Error())
-		return nil
-	}
-	return body
-}*/
 
 func main() {
 	log.Println("Server on")

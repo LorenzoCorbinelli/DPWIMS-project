@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<html>
-    <body>
-        <form action="http://127.0.0.1:8080/releaseTugs" method="post" enctype="application/x-www-form-urlencoded">
-            <label>Port: </label>
-            <input type="text" name="port" readonly="readonly" value={{.Port}}>
-            <br><br>
-            {{range $index, $value := .Ships}}
-                <label>IMO: </label>
-                <input type="text" name={{$index}} readonly="readonly" value={{$value.Imo}}>
-                <label>Tug name: </label>
-                <input type="text" name="shipName" readonly="readonly" value={{$value.Name}}>
-                <br><br>
-            {{end}}
-            <br><br>
-            <input type="submit" value="Release tugs">
-        </form>
-    </body>
-</html>
+{{define "content"}}
+<form action="http://127.0.0.1:8080/releaseTugs" method="post" enctype="application/x-www-form-urlencoded">
+    <label>Port: </label>
+    <input type="text" name="port" readonly="readonly" value={{.Port}}>
+    <br><br>
+    {{range $index, $value := .Ships}}
+        <label>IMO: </label>
+        <input type="text" name={{$index}} readonly="readonly" value={{$value.Imo}}>
+        <label>Tug name: </label>
+        <input type="text" name="shipName" readonly="readonly" value={{$value.Name}}>
+        <br><br>
+    {{end}}
+    <br><br>
+    <input type="submit" value="Release tugs">
+</form>
+{{end}}

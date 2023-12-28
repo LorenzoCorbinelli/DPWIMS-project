@@ -1,18 +1,15 @@
-<!DOCTYPE html>
-<html>
-    <body>
-        <form action="http://127.0.0.1:8080/registerArrival" method="post" enctype="application/x-www-form-urlencoded">
-            <label>Port: </label>
-            <select name="port">
-                {{range .}}
-                <option>{{.}}</option>
-                {{end}}
-            </select>
-            <label>IMO: </label>
-            <input type="text" name="imo">
-            <label>Ship name: </label>
-            <input type="text" name="shipName">
-            <input type="submit">
-        </form>
-    </body>
-</html>
+{{define "content"}}
+<form action="http://127.0.0.1:8080/registerArrival" method="post" enctype="application/x-www-form-urlencoded">
+    <label>Port: </label>
+    <select name="port">
+        {{range .}}
+        <option>{{.}}</option>
+        {{end}}
+    </select>
+    <label>IMO: </label>
+    <input type="text" name="imo">
+    <label>Ship name: </label>
+    <input type="text" name="shipName">
+    <input type="submit">
+</form>
+{{end}}
