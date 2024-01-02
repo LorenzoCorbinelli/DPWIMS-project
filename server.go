@@ -7,9 +7,11 @@ import (
 	"context"
 	"time"
 	"strconv"
+	"strings"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	pb "project/rpc"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type Ship struct {
@@ -19,10 +21,9 @@ type Ship struct {
 
 var ports = make(map[string]string)
 
-func registerNewPort(writer http.ResponseWriter, request *http.Request) {
-	portName := request.URL.Query().Get("name")
-	portConnection := request.URL.Query().Get("portConnection")
-	ports[portName] = portConnection
+func registerNewPort(client mqtt.Client, msg mqtt.Message) {
+	payload := strings.Split(string(msg.Payload()), ":")
+	ports[payload[0]] = payload[1]	// payload[0] is the port name and payload[1] is the port connection
 }
 
 func arrivalHandler(writer http.ResponseWriter, request *http.Request) {
@@ -232,9 +233,19 @@ func portConnection(port string) *grpc.ClientConn {
 }
 
 func main() {
-	log.Println("Server on")
-
-	http.HandleFunc("/registerPort", registerNewPort)
+	opts := mqtt.NewClientOptions().AddBroker("tcp://localhost:1883")
+	opts.SetClientID("server")
+	mqttClient := mqtt.NewClient(opts)
+	token := mqttClient.Connect()
+	if token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
+		return
+	}
+	sub := mqttClient.Subscribe("ports/register", 0, registerNewPort)
+	if sub.Wait() && sub.Error() != nil {
+		log.Fatal(sub.Error())
+		return
+	}
 
 	http.HandleFunc("/arrival", arrivalHandler)
 	http.HandleFunc("/registerArrival", registerArrival)
@@ -249,5 +260,8 @@ func main() {
 	http.HandleFunc("/tugs", tugsRequest)
 	http.HandleFunc("/tugsHandler", tugsHandler)
 	http.HandleFunc("/releaseTugs", releaseTugsHandler)
+
+	log.Println("Server on")
+
 	http.ListenAndServe(":8080", nil)
 }

@@ -3,15 +3,16 @@ package main
 import (
 	"context"
 	"net"
-	"net/http"
 	"fmt"
 	"log"
 	"os"
+	"time"
 	"google.golang.org/grpc"
 	pb "project/rpc"
 	"gorm.io/gorm"
 	"gorm.io/driver/sqlite"
 	dbm "project/ports/common"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type server struct {
@@ -21,13 +22,16 @@ type server struct {
 
 func createPort(name string, portConnection string, bunkeringShips []dbm.BunkeringShips, tugs []dbm.Tugs) {
 	// communication of name and port connection at the server
-	requestURL := fmt.Sprintf("http://localhost:8080/registerPort?name=%s&portConnection=%s", name, portConnection)
-	req, reqErr := http.NewRequest(http.MethodPost, requestURL, nil)
-	if reqErr != nil {
-		log.Fatal(reqErr.Error())
+	opts := mqtt.NewClientOptions().AddBroker("tcp://localhost:1883")
+	opts.SetClientID(name)
+	mqttClient := mqtt.NewClient(opts)
+	token := mqttClient.Connect()
+	if token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
 		return
 	}
-	http.DefaultClient.Do(req)
+	token = mqttClient.Publish("ports/register", 0, false, fmt.Sprintf("%s:%s", name, portConnection))
+	token.Wait()
 
 	dbName := fmt.Sprintf("%s.db", name)
 	os.Remove(dbName)
@@ -152,6 +156,7 @@ func main() {
 	})
 
 	go createPort("Livorno", "8090", tankers, tugs)
+	time.Sleep(time.Second)
 
 	tankers = make([]dbm.BunkeringShips, 0)
 	tankers = append(tankers, dbm.BunkeringShips{
