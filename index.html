@@ -1,0 +1,12 @@
+{{define "content"}}
+<form action="http://127.0.0.1:8080/operations" method="post" enctype="application/x-www-form-urlencoded">
+    <label>Select the operation to perform: </label>
+    <select name="operation">
+        <option value="arrival">Register arrival</option>
+        <option value="departure">Register departure</option>
+        <option value="bunkering">Bunkering request</option>
+        <option value="tugs">Tugs request</option>
+    </select>
+    <input type="submit">
+</form>
+{{end}}

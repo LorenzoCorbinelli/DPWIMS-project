@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"fmt"
 	"log"
 	"html/template"
 	"context"
@@ -24,6 +25,17 @@ var ports = make(map[string]string)
 func registerNewPort(client mqtt.Client, msg mqtt.Message) {
 	payload := strings.Split(string(msg.Payload()), ":")
 	ports[payload[0]] = payload[1]	// payload[0] is the port name and payload[1] is the port connection
+}
+
+func mainHandler(writer http.ResponseWriter, request *http.Request) {
+	templ, _ := template.ParseFiles("layout.html", "index.html")
+	templ.ExecuteTemplate(writer, "layout", nil)
+}
+
+func operationSelected(writer http.ResponseWriter, request *http.Request) {
+	operation := request.PostFormValue("operation")
+	url := fmt.Sprintf("http://localhost:8080/%s", operation)
+	http.Redirect(writer, request, url, http.StatusSeeOther)
 }
 
 func arrivalHandler(writer http.ResponseWriter, request *http.Request) {
@@ -246,6 +258,9 @@ func main() {
 		log.Fatal(sub.Error())
 		return
 	}
+
+	http.HandleFunc("/", mainHandler)
+	http.HandleFunc("/operations", operationSelected)
 
 	http.HandleFunc("/arrival", arrivalHandler)
 	http.HandleFunc("/registerArrival", registerArrival)
