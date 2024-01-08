@@ -27,6 +27,11 @@ func registerNewPort(client mqtt.Client, msg mqtt.Message) {
 	ports[payload[0]] = payload[1]	// payload[0] is the port name and payload[1] is the port connection
 }
 
+func portDisconnected(client mqtt.Client, msg mqtt.Message) {
+	payload := strings.Split(string(msg.Payload()), ":")
+	delete(ports, payload[0])	// a port has disconnected and so I remove that port from the map
+}
+
 func mainHandler(writer http.ResponseWriter, request *http.Request) {
 	templ, _ := template.ParseFiles("layout.html", "index.html")
 	templ.ExecuteTemplate(writer, "layout", nil)
@@ -254,6 +259,11 @@ func main() {
 		return
 	}
 	sub := mqttClient.Subscribe("ports/register", 0, registerNewPort)
+	if sub.Wait() && sub.Error() != nil {
+		log.Fatal(sub.Error())
+		return
+	}
+	sub = mqttClient.Subscribe("ports/disconnection", 0, portDisconnected)
 	if sub.Wait() && sub.Error() != nil {
 		log.Fatal(sub.Error())
 		return

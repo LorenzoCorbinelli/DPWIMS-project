@@ -22,15 +22,17 @@ type server struct {
 
 func createPort(name string, portConnection string, bunkeringShips []dbm.BunkeringShips, tugs []dbm.Tugs) {
 	// communication of name and port connection at the server
+	payload := fmt.Sprintf("%s:%s", name, portConnection)
 	opts := mqtt.NewClientOptions().AddBroker("tcp://localhost:1883")
 	opts.SetClientID(name)
+	opts.SetWill("ports/disconnection", payload, 0, false)
 	mqttClient := mqtt.NewClient(opts)
 	token := mqttClient.Connect()
 	if token.Wait() && token.Error() != nil {
 		log.Fatal(token.Error())
 		return
 	}
-	token = mqttClient.Publish("ports/register", 0, false, fmt.Sprintf("%s:%s", name, portConnection))
+	token = mqttClient.Publish("ports/register", 0, false, payload)
 	token.Wait()
 
 	dbName := fmt.Sprintf("%s.db", name)
