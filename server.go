@@ -44,9 +44,9 @@ func operationSelected(writer http.ResponseWriter, request *http.Request) {
 }
 
 func arrivalHandler(writer http.ResponseWriter, request *http.Request) {
-	keys := portList()
+	ports := portList()
 	templ, _ := template.ParseFiles("layout.html", "arrival.html")
-	templ.ExecuteTemplate(writer, "layout", keys)
+	templ.ExecuteTemplate(writer, "layout", ports)
 }
 
 func registerArrival(writer http.ResponseWriter, request *http.Request) {
@@ -71,9 +71,9 @@ func registerArrival(writer http.ResponseWriter, request *http.Request) {
 }
 
 func departureHandler(writer http.ResponseWriter, request *http.Request) {
-	keys := portList()
+	ports := portList()
 	templ, _ := template.ParseFiles("layout.html", "departure.html")
-	templ.ExecuteTemplate(writer, "layout", keys)
+	templ.ExecuteTemplate(writer, "layout", ports)
 }
 
 func registerDeparture(writer http.ResponseWriter, request *http.Request) {
@@ -99,9 +99,9 @@ func registerDeparture(writer http.ResponseWriter, request *http.Request) {
 }
 
 func bunkeringRequest(writer http.ResponseWriter, request *http.Request) {
-	keys := portList()
+	ports := portList()
 	templ, _ := template.ParseFiles("layout.html", "bunkering.html")
-	templ.ExecuteTemplate(writer, "layout", keys)
+	templ.ExecuteTemplate(writer, "layout", ports)
 }
 
 func bunkeringHandler(writer http.ResponseWriter, request *http.Request) {
@@ -158,9 +158,9 @@ func bunkeringEndHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func tugsRequest(writer http.ResponseWriter, request *http.Request) {
-	keys := portList()
+	ports := portList()
 	templ, _ := template.ParseFiles("layout.html", "tugs.html")
-	templ.ExecuteTemplate(writer, "layout", keys)
+	templ.ExecuteTemplate(writer, "layout", ports)
 }
 
 func tugsHandler(writer http.ResponseWriter, request *http.Request) {

@@ -34,7 +34,7 @@ func createPort(name string, portConnection string, bunkeringShips []dbm.Bunkeri
 	}
 	token = mqttClient.Publish("ports/register", 0, false, payload)
 	token.Wait()
-
+	// db setup
 	dbName := fmt.Sprintf("%s.db", name)
 	os.Remove(dbName)
 	log.Println(name + " on")
